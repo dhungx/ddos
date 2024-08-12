@@ -25,6 +25,8 @@ HÃY CẨN THẬN TRƯỚC KHI SỬ DỤNG VÌ VIỆC BẠN SẮP LÀM CÓ THỂ
 
 PHẢI ĐẲNG CẤP THÌ MỚI TỒN TẠI ĐƯỢC!
 
+AuThor: ViBoss Studio
+Github: https://github.com/dhungx/
   """
 
     print(f"{F.RED}{logo}")
