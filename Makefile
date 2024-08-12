@@ -26,7 +26,7 @@ run:
 	@echo ---------------------------------
 	@echo
 
-	@poetry run python3 overload.py
+	@poetry run python3 ddos.py
 
 server:
 
