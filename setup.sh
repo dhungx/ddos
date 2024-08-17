@@ -39,7 +39,37 @@ detect_os() {
 # Cài đặt các gói Python bằng pip
 install_packages() {
     echo "Cài đặt các gói Python cần thiết..."
+    pip install --upgrade pip
     pip install requests>=2.28.1 colorama>=0.4.5 humanfriendly>=10.0 PySocks>=1.7.1 scapy>=2.4.5 get_mac>=0.8.3
+}
+
+# Cài đặt các công cụ cần thiết trên Kali Linux
+install_kali_tools() {
+    echo "Cài đặt các công cụ cần thiết trên Kali Linux..."
+    sudo apt-get update
+    sudo apt-get install -y python3-pip
+}
+
+# Cài đặt các công cụ cần thiết trên Termux
+install_termux_tools() {
+    echo "Cài đặt các công cụ cần thiết trên Termux..."
+    pkg update
+    pkg install -y python
+    pip install --upgrade pip
+}
+
+# Cài đặt các công cụ cần thiết trên iSH
+install_ish_tools() {
+    echo "Cài đặt các công cụ cần thiết trên iSH..."
+    apk update
+    apk add python3 py3-pip
+    pip3 install --upgrade pip
+}
+
+# Cài đặt các công cụ cần thiết trên Windows
+install_windows_tools() {
+    echo "Cài đặt các công cụ cần thiết trên Windows..."
+    python -m pip install --upgrade pip
 }
 
 # Xử lý hệ điều hành không được hỗ trợ
@@ -49,10 +79,54 @@ handle_unsupported_os() {
     echo "pip install requests>=2.28.1 colorama>=0.4.5 humanfriendly>=10.0 PySocks>=1.7.1 scapy>=2.4.5 get_mac>=0.8.3"
 }
 
+# Hỏi người dùng có muốn chạy ddos.py không
+ask_to_run_ddos() {
+    read -p "Bạn có muốn chạy tệp ddos.py không? [y/n]: " choice
+    case "$choice" in
+        y|Y)
+            if [[ -f "ddos.py" ]]; then
+                echo "Đang chạy ddos.py..."
+                python3 ddos.py
+            else
+                echo "Tệp ddos.py không tồn tại trong thư mục hiện tại."
+            fi
+            ;;
+        n|N)
+            echo "Không chạy ddos.py. Kết thúc."
+            ;;
+        *)
+            echo "Lựa chọn không hợp lệ. Vui lòng chọn 'y' hoặc 'n'."
+            ;;
+    esac
+}
+
 # Gọi hàm để kiểm tra hệ điều hành và cài đặt gói
 detect_os
 if [[ $? -eq 0 ]]; then
     install_packages
+    case "$(uname -s)" in
+        Linux)
+            if grep -q "ID=kali" /etc/os-release; then
+                install_kali_tools
+            elif grep -q "ID=termux" /etc/os-release; then
+                install_termux_tools
+            elif grep -q "ID=ish" /etc/os-release; then
+                install_ish_tools
+            fi
+            ;;
+        Darwin)
+            # macOS đã được xác định
+            ;;
+        MINGW64_NT*|MINGW32_NT*|MSYS_NT*)
+            install_windows_tools
+            ;;
+        *)
+            handle_unsupported_os
+            ;;
+    esac
+
+    # Hỏi người dùng có muốn chạy ddos.py không
+    ask_to_run_ddos
 else
     handle_unsupported_os
 fi
