@@ -1,8 +1,14 @@
+Dưới đây là phiên bản được định dạng lại để trông chuyên nghiệp và dễ đọc hơn:
+
+```markdown
 # DDoS Script
 
-## Dành cho máy mạnh.
-# [Máy yếu ở đây](https://github.com/dhungx/...)
+## Tùy chọn thiết bị
 
+- **Dành cho máy mạnh.**
+- **[Máy yếu, click vào đây](https://github.com/dhungx/...)**
+
+---
 
 Dự án này là một công cụ tấn công từ chối dịch vụ (DDoS). Mục tiêu là tối ưu hóa tốc độ gửi yêu cầu để tạo ra tải trọng lớn lên máy chủ mục tiêu.
 
@@ -16,14 +22,16 @@ Dự án này là một công cụ tấn công từ chối dịch vụ (DDoS). M
    pip install -r requirements.txt 
    python3 ddos.py
    ```
+
 ## Cảnh Báo
 
-- Sử dụng công cụ này chỉ trên máy chủ mà bạn có quyền kiểm soát hoặc đã được phép thử nghiệm.
-- Việc sử dụng công cụ này mà không có sự cho phép có thể vi phạm pháp luật và các điều khoản dịch vụ.
+⚠️ **Sử dụng công cụ này chỉ trên máy chủ mà bạn có quyền kiểm soát hoặc đã được phép thử nghiệm.**  
+Việc sử dụng công cụ này mà không có sự cho phép có thể vi phạm pháp luật và các điều khoản dịch vụ.
+**Tác giả sẽ không chịu trách nhiệm nào về bất cứ hậu quả pháp lý nào mà bạn gây ra.**
 
 ## Đóng Góp
 
-Nếu bạn muốn đóng góp vào dự án này, hãy gửi Pull Request hoặc mở Issue để thảo luận về các thay đổi.
+Nếu bạn muốn đóng góp vào dự án này, hãy gửi Pull Request hoặc mở một Issue để thảo luận về các thay đổi.
 
 ## Giấy Phép
 
