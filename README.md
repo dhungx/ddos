@@ -1,12 +1,10 @@
-Dưới đây là phiên bản được định dạng lại để trông chuyên nghiệp và dễ đọc hơn:
 
-```markdown
 # DDoS Script
 
 ## Tùy chọn thiết bị
 
 - **Dành cho máy mạnh.**
-- **[Máy yếu, click vào đây](https://github.com/dhungx/...)**
+- *[Máy yếu ở đây](https://github.com/dhungx/...)*
 
 ---
 
