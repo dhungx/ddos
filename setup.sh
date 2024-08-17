@@ -1,56 +1,20 @@
 #!/bin/bash
 
-# Hàm kiểm tra hệ điều hành
-detect_os() {
-    echo "Xác định hệ điều hành..."
-
-    if [[ "$(uname -s)" == "Linux" ]]; then
-        if [[ -f /etc/os-release ]]; then
-            . /etc/os-release
-            if [[ "$ID" == "kali" ]]; then
-                echo "Phát hiện Kali Linux"
-                return 0
-            elif [[ "$ID" == "termux" ]]; then
-                echo "Phát hiện Termux"
-                return 0
-            elif [[ "$ID" == "ish" ]]; then
-                echo "Phát hiện iSH"
-                return 0
-            else
-                echo "Phát hiện hệ điều hành Linux khác"
-                return 1
-            fi
-        else
-            echo "Không thể xác định hệ điều hành Linux từ /etc/os-release"
-            return 1
-        fi
-    elif [[ "$(uname -s)" == "Darwin" ]]; then
-        echo "Phát hiện macOS"
-        return 1
-    elif [[ "$(uname -s)" == "MINGW64_NT"* || "$(uname -s)" == "MINGW32_NT"* || "$(uname -s)" == "MSYS_NT"* ]]; then
-        echo "Phát hiện Windows"
-        return 0
-    else
-        echo "Hệ điều hành không xác định hoặc không hỗ trợ"
-        return 1
-    fi
-}
-
-# Cài đặt các gói Python bằng pip
+# Hàm cài đặt các gói Python bằng pip
 install_packages() {
     echo "Cài đặt các gói Python cần thiết..."
     pip install --upgrade pip
     pip install requests>=2.28.1 colorama>=0.4.5 humanfriendly>=10.0 PySocks>=1.7.1 scapy>=2.4.5 get_mac>=0.8.3
 }
 
-# Cài đặt các công cụ cần thiết trên Kali Linux
+# Cài đặt các công cụ cần thiết cho Kali Linux
 install_kali_tools() {
     echo "Cài đặt các công cụ cần thiết trên Kali Linux..."
     sudo apt-get update
     sudo apt-get install -y python3-pip
 }
 
-# Cài đặt các công cụ cần thiết trên Termux
+# Cài đặt các công cụ cần thiết cho Termux
 install_termux_tools() {
     echo "Cài đặt các công cụ cần thiết trên Termux..."
     pkg update
@@ -58,7 +22,7 @@ install_termux_tools() {
     pip install --upgrade pip
 }
 
-# Cài đặt các công cụ cần thiết trên iSH
+# Cài đặt các công cụ cần thiết cho iSH
 install_ish_tools() {
     echo "Cài đặt các công cụ cần thiết trên iSH..."
     apk update
@@ -66,17 +30,43 @@ install_ish_tools() {
     pip3 install --upgrade pip
 }
 
-# Cài đặt các công cụ cần thiết trên Windows
+# Cài đặt các công cụ cần thiết cho Windows
 install_windows_tools() {
     echo "Cài đặt các công cụ cần thiết trên Windows..."
     python -m pip install --upgrade pip
 }
 
-# Xử lý hệ điều hành không được hỗ trợ
-handle_unsupported_os() {
-    echo "Hệ điều hành của bạn không được hỗ trợ cho việc cài đặt tự động gói Python."
-    echo "Vui lòng cài đặt các gói Python theo cách thủ công với lệnh sau:"
-    echo "pip install requests>=2.28.1 colorama>=0.4.5 humanfriendly>=10.0 PySocks>=1.7.1 scapy>=2.4.5 get_mac>=0.8.3"
+# Hỏi người dùng chọn hệ điều hành và thực hiện cài đặt tương ứng
+ask_os_and_install() {
+    echo "Vui lòng chọn hệ điều hành của bạn:"
+    echo "1) Kali Linux"
+    echo "2) Termux"
+    echo "3) iSH"
+    echo "4) Windows"
+    echo "5) Khác"
+    read -p "Nhập số tương ứng: " choice
+
+    case "$choice" in
+        1)
+            install_kali_tools
+            ;;
+        2)
+            install_termux_tools
+            ;;
+        3)
+            install_ish_tools
+            ;;
+        4)
+            install_windows_tools
+            ;;
+        5)
+            echo "Cài đặt thủ công. Vui lòng cài đặt các gói Python cần thiết và công cụ bằng cách sử dụng lệnh sau:"
+            echo "pip install requests>=2.28.1 colorama>=0.4.5 humanfriendly>=10.0 PySocks>=1.7.1 scapy>=2.4.5 get_mac>=0.8.3"
+            ;;
+        *)
+            echo "Lựa chọn không hợp lệ. Không thể cài đặt công cụ tự động."
+            ;;
+    esac
 }
 
 # Hỏi người dùng có muốn chạy ddos.py không
@@ -100,33 +90,9 @@ ask_to_run_ddos() {
     esac
 }
 
-# Gọi hàm để kiểm tra hệ điều hành và cài đặt gói
-detect_os
-if [[ $? -eq 0 ]]; then
-    install_packages
-    case "$(uname -s)" in
-        Linux)
-            if grep -q "ID=kali" /etc/os-release; then
-                install_kali_tools
-            elif grep -q "ID=termux" /etc/os-release; then
-                install_termux_tools
-            elif grep -q "ID=ish" /etc/os-release; then
-                install_ish_tools
-            fi
-            ;;
-        Darwin)
-            # macOS đã được xác định
-            ;;
-        MINGW64_NT*|MINGW32_NT*|MSYS_NT*)
-            install_windows_tools
-            ;;
-        *)
-            handle_unsupported_os
-            ;;
-    esac
+# Cài đặt các gói Python và hỏi hệ điều hành
+install_packages
+ask_os_and_install
 
-    # Hỏi người dùng có muốn chạy ddos.py không
-    ask_to_run_ddos
-else
-    handle_unsupported_os
-fi
+# Hỏi người dùng có muốn chạy ddos.py không
+ask_to_run_ddos
