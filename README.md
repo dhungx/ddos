@@ -1,7 +1,7 @@
 # DDoS Script
 
-## Dành cho máy mạnh: [Link đến GitHub của dự án](https://github.com/dhungx/...)
-(Máy yếu, xem tại đây)
+## Dành cho máy mạnh.  [Máy yếu ở đây](https://github.com/dhungx/...)
+
 
 Dự án này là một công cụ tấn công từ chối dịch vụ (DDoS). Mục tiêu là tối ưu hóa tốc độ gửi yêu cầu để tạo ra tải trọng lớn lên máy chủ mục tiêu.
 
