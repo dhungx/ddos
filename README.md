@@ -1,4 +1,3 @@
-
 # DDoS Script
 
 ## Tùy chọn thiết bị
@@ -34,3 +33,7 @@ Nếu bạn muốn đóng góp vào dự án này, hãy gửi Pull Request hoặ
 ## Giấy Phép
 
 Dự án này được cấp phép theo Giấy phép MIT. Xem file [LICENSE](LICENSE) để biết thêm chi tiết.
+
+## Thông Tin
+[Telegram](https://t.me/dhungx)
+[Facebook](https://www.facebook.com/dohungx.09)
