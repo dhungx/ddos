@@ -16,9 +16,12 @@ Dự án này là một công cụ tấn công từ chối dịch vụ (DDoS). M
    ```bash
    git clone https://github.com/dhungx/ddos.git
    cd ddos
-   pip install -r requirements.txt 
-   python3 ddos.py
+   python3 setup.py
    ```
+   Chạy
+```bash
+python3 ddos.py
+```
 
 ## Cảnh Báo
 
