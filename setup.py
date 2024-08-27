@@ -2,6 +2,10 @@ import os
 import sys
 import subprocess
 
+# Mã escape ANSI để đổi màu đỏ và in đậm
+RED_BOLD = '\033[91m\033[1m'
+RESET = '\033[0m'
+
 def install_packages(packages):
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install"] + packages)
@@ -17,8 +21,20 @@ def check_pip():
         print("pip không được cài đặt và không thể tự động cài đặt. Vui lòng cài đặt pip thủ công.")
         sys.exit(1)
 
+def clear_screen():
+    # Xóa màn hình tùy theo hệ điều hành
+    if os.name == 'nt':
+        os.system('cls')
+    else:
+        os.system('clear')
+
 def main():
-    print("Tấn công DDoS là hành vi phạm pháp và sẽ bị xử lý theo quy định của pháp luật. Bạn có chắc chắn muốn chạy ko? [y/n]")
+    clear_screen()  # Xóa màn hình
+
+    # Cảnh báo tấn công DDoS với màu đỏ và in đậm
+    print(RED_BOLD + "Tấn công DDoS là hành vi phạm pháp và sẽ bị xử lý theo quy định của pháp luật." + RESET)
+    print(RED_BOLD + "Bạn có chắc chắn muốn chạy ko? [y/n]" + RESET)
+    
     choice = input().strip().lower()
     if choice != 'y':
         print("Quá trình bị hủy.")
