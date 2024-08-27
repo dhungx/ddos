@@ -41,25 +41,33 @@ def main():
         print("Quá trình bị hủy.")
         sys.exit()
 
-    print("Đang kiểm tra hệ điều hành/ứng dụng...")
-
-    # Kiểm tra và cài đặt pip nếu cần thiết
-    check_pip()
-
-    # Kiểm tra môi trường người dùng
-    if 'termux' in os.environ.get('PATH', '').lower():
+    # Hỏi người dùng về hệ điều hành/ứng dụng
+    print("Bạn đang sử dụng hệ điều hành/ứng dụng nào?")
+    print("1. Termux")
+    print("2. iSH")
+    print("3. Linux")
+    print("4. Windows")
+    
+    user_env_choice = input().strip()
+    
+    if user_env_choice == '1':
         user_env = 'termux'
-    elif os.name == 'posix':
-        if os.environ.get('SHELL', '').endswith('ish'):
-            user_env = 'ish'
-        else:
-            user_env = 'linux'
-    elif os.name == 'nt':
+    elif user_env_choice == '2':
+        user_env = 'ish'
+    elif user_env_choice == '3':
+        user_env = 'linux'
+    elif user_env_choice == '4':
         user_env = 'windows'
+    elif user_env_choice == '5':
+        user_env = 'unknown'
     else:
+        print("Lựa chọn không hợp lệ. Mặc định là 'khác'.")
         user_env = 'unknown'
 
     print(f"Đang kiểm tra môi trường: {user_env}")
+
+    # Kiểm tra và cài đặt pip nếu cần thiết
+    check_pip()
 
     # Các gói cần cài đặt
     packages = [
