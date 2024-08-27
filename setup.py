@@ -8,6 +8,7 @@ RESET = '\033[0m'
 
 def install_packages(packages):
     try:
+        print(RED_BOLD + "Đang cài đặt thư viện cần thiết, vui lòng đợi..." + RESET)
         subprocess.check_call([sys.executable, "-m", "pip", "install"] + packages)
     except subprocess.CalledProcessError as e:
         print(f"Lỗi khi cài đặt các gói: {e}")
@@ -39,6 +40,8 @@ def main():
     if choice != 'y':
         print("Quá trình bị hủy.")
         sys.exit()
+
+    print("Đang kiểm tra hệ điều hành/ứng dụng...")
 
     # Kiểm tra và cài đặt pip nếu cần thiết
     check_pip()
