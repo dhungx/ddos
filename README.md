@@ -34,6 +34,7 @@ python3 ddos.py
 ⚠️ **Sử dụng công cụ này chỉ trên máy chủ mà bạn có quyền kiểm soát hoặc đã được phép thử nghiệm.**  
 Việc sử dụng công cụ này mà không có sự cho phép có thể vi phạm pháp luật và các điều khoản dịch vụ.
 **Tác giả sẽ không chịu trách nhiệm nào về bất cứ hậu quả pháp lý nào mà bạn gây ra.**
+Công cụ này tạo ra chỉ để nhăm mục đích học tập và tham khảo.
 
 ## Đóng Góp
 
