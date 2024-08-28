@@ -11,7 +11,10 @@ RED_BOLD = "\033[1;31m"
 RESET = "\033[0m"
 
 def clear_screen():
-    os.system('cls' if os.name == 'nt' else 'clear')
+    try:
+        os.system('cls' if os.name == 'nt' else 'clear')
+    except Exception as e:
+        logging.error(f"Clear screen failed: {e}")
 
 def check_python_version():
     if sys.version_info < (3, 6):
@@ -21,31 +24,42 @@ def check_python_version():
 def prompt_user():
     clear_screen()
     print(RED_BOLD + "Tấn công DDoS là hành vi phạm pháp và có thể bị trừng phạt theo pháp luật. Bạn có chắc chắn muốn chạy" + RESET)
-    response = input("[y/n]: ").strip().lower()
+    
+    while True:
+        response = input("[y/n]: ").strip().lower()
+        if response in ['y', 'n']:
+            break
+        print("Lựa chọn không hợp lệ, vui lòng nhập lại.")
     
     if response != 'y':
         print("Quá trình đã bị hủy bỏ.")
+        logging.info("User canceled the operation.")
         sys.exit()
 
-    os_choice = input("Bạn đang sử dụng hệ điều hành/ứng dụng nào?\n"
-                      "1) Linux\n"
-                      "2) Window\n"
-                      "3) Ish\n"
-                      "4) Termux\n"
-                      "Lựa chọn của bạn (1/2/3/4): ").strip()
+    while True:
+        os_choice = input("Bạn đang sử dụng hệ điều hành/ứng dụng nào?\n"
+                          "1) Linux\n"
+                          "2) Windows\n"
+                          "3) iSH\n"
+                          "4) Termux\n"
+                          "Lựa chọn của bạn (1/2/3/4): ").strip()
+        if os_choice in ['1', '2', '3', '4']:
+            break
+        print("Lựa chọn không hợp lệ, vui lòng nhập lại.")
 
+    logging.info(f"User confirmed to proceed. OS choice: {os_choice}")
     return os_choice
 
 def install_libraries():
     print("Đang cài đặt thư viện cần thiết, vui lòng chờ…")
+    logging.info("Installing required libraries...")
     try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", 
-                               "requests>=2.28.1",
-                               "colorama>=0.4.5",
-                               "humanfriendly>=10.0",
-                               "PySocks>=1.7.1",
-                               "scapy>=2.4.5",
-                               "get_mac>=0.8.3"])
+        subprocess.run([sys.executable, "-m", "pip", "install", 
+                        "requests>=2.28.1",
+                        "humanfriendly>=10.0",
+                        "PySocks>=1.7.1",
+                        "scapy>=2.4.5",
+                        "get_mac>=0.8.3"], check=True)
     except subprocess.CalledProcessError as e:
         logging.error(f"Đã xảy ra lỗi khi cài đặt thư viện: {e}")
         print("Đã xảy ra lỗi khi cài đặt thư viện. Vui lòng kiểm tra log.")
@@ -58,8 +72,9 @@ def run_ddos_script():
         sys.exit(1)
     
     print("Đang chạy file ddos.py...")
+    logging.info("Running ddos.py script...")
     try:
-        subprocess.check_call([sys.executable, "ddos.py"])
+        subprocess.run([sys.executable, "ddos.py"], check=True)
     except subprocess.CalledProcessError as e:
         logging.error(f"Đã xảy ra lỗi khi chạy file ddos.py: {e}")
         print("Đã xảy ra lỗi khi chạy file ddos.py. Vui lòng kiểm tra log.")
