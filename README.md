@@ -26,7 +26,7 @@ Dự án này là một công cụ tấn công từ chối dịch vụ (DDoS). M
    ```
    Chạy
 ```bash
-python3 ddos.py
+python3 vbs.py
 ```
 
 ## Cảnh Báo
