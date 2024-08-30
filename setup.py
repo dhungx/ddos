@@ -66,18 +66,18 @@ def install_libraries():
         sys.exit(1)
 
 def run_ddos_script():
-    if not os.path.isfile("ddos.py"):
-        logging.error("File ddos.py không tồn tại.")
-        print("File ddos.py không tồn tại.")
+    if not os.path.isfile("vbs.py"):
+        logging.error("File vbs.py không tồn tại.")
+        print("File vbs.py không tồn tại.")
         sys.exit(1)
     
-    print("Đang chạy file ddos.py...")
-    logging.info("Running ddos.py script...")
+    print("Đang chạy file vbs.py...")
+    logging.info("Running vbs.py script...")
     try:
-        subprocess.run([sys.executable, "ddos.py"], check=True)
+        subprocess.run([sys.executable, "vbs.py"], check=True)
     except subprocess.CalledProcessError as e:
-        logging.error(f"Đã xảy ra lỗi khi chạy file ddos.py: {e}")
-        print("Đã xảy ra lỗi khi chạy file ddos.py. Vui lòng kiểm tra log.")
+        logging.error(f"Đã xảy ra lỗi khi chạy file vbs.py: {e}")
+        print("Đã xảy ra lỗi khi chạy file vbs.py. Vui lòng kiểm tra log.")
         sys.exit(1)
 
 if __name__ == "__main__":
