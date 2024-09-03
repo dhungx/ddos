@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "overload"
+name = "ViBoss Dos"
 version = "0.1.0"
 description = "DoS Tool"
-authors = ["7zx, 8fn and João"]
+authors = ["ViBoss Studio"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
