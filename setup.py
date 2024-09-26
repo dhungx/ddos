@@ -56,6 +56,7 @@ def install_libraries():
     try:
         subprocess.run([sys.executable, "-m", "pip", "install", 
                         "requests>=2.28.1",
+                        "colorama",
                         "humanfriendly>=10.0",
                         "PySocks>=1.7.1",
                         "scapy>=2.4.5",
