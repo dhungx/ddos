@@ -22,11 +22,11 @@ Dự án này là một công cụ tấn công từ chối dịch vụ (DDoS). M
    ```bash
    git clone https://github.com/dhungx/ddos.git
    cd ddos
-   python3 setup.py
+   python setup.py
    ```
    Chạy
 ```bash
-python3 vbs.py
+python vbs.py
 ```
 
 ## Cảnh Báo
