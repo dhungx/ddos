@@ -55,12 +55,12 @@ def install_libraries():
     logging.info("Installing required libraries...")
     try:
         subprocess.run([sys.executable, "-m", "pip", "install", 
-                        "requests>=2.28.1",
+                        "requests",
                         "colorama",
-                        "humanfriendly>=10.0",
-                        "PySocks>=1.7.1",
-                        "scapy>=2.4.5",
-                        "get_mac>=0.8.3"], check=True)
+                        "humanfriendly",
+                        "PySocks",
+                        "scapy",
+                        "get_mac"], check=True)
     except subprocess.CalledProcessError as e:
         logging.error(f"Đã xảy ra lỗi khi cài đặt thư viện: {e}")
         print("Đã xảy ra lỗi khi cài đặt thư viện. Vui lòng kiểm tra log.")
