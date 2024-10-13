@@ -36,7 +36,7 @@ def check_method_input() -> str:
             f"{F.RED}│   ├───{F.MAGENTA} [!] {F.BLUE}This attack needs Super User privileges!"
         )
         print(
-            f"{F.RED}│   └───{F.MAGENTA} [!] {F.BLUE}Run: {F.GREEN}sudo {os.popen('which python').read()[:-1]} overload.py\n{F.RESET}"
+            f"{F.RED}│   └───{F.MAGENTA} [!] {F.BLUE}Run: {F.GREEN}sudo {os.popen('which python').read()[:-1]} vbs.py\n{F.RESET}"
         )
         sys.exit(1)
 
