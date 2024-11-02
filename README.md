@@ -3,7 +3,7 @@
 ## Tùy chọn thiết bị
 
 - **Dành cho máy mạnh.**
-- *[Máy yếu ở đây](https://github.com/dhungx/...)*
+- *[Máy yếu ở đây](https://github.com/dhungx/dos)*
 
 ---
 
@@ -22,11 +22,16 @@ Dự án này là một công cụ tấn công từ chối dịch vụ (DDoS). M
    ```bash
    git clone https://github.com/dhungx/ddos.git
    cd ddos
-   python setup.py
+   sudo bash install.sh
    ```
    Chạy
+   Windos
 ```bash
-python vbs.py
+sudo python vbs.py
+```
+Linux/MacOS
+```bash
+sudo python3 vbs.py
 ```
 
 ## Cảnh Báo
