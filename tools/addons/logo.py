@@ -1,17 +1,13 @@
-"""This module provides a function that prints the logo's application."""
-
 import os
-
 from colorama import Fore as F
 
+def show_logo(color: str = 'red') -> None:
+    """In logo ứng dụng với thông điệp cảnh báo.
 
-def show_logo() -> None:
-    """Print the application logo.
+    Tham số:
+        color (str): Màu của văn bản logo. Mặc định là 'red'.
 
-    Args:
-        None
-
-    Returns:
+    Trả về:
         None
     """
     logo = r"""
@@ -29,11 +25,27 @@ AuThor: ViBoss Studio
 Github: https://github.com/dhungx/
   """
 
-    print(f"{F.RED}{logo}")
+    # Đặt màu dựa trên tùy chọn của người dùng
+    color_map = {
+        'red': F.RED,
+        'green': F.GREEN,
+        'yellow': F.YELLOW,
+        'blue': F.BLUE,
+        'magenta': F.MAGENTA,
+        'cyan': F.CYAN,
+        'white': F.WHITE,
+    }
+
+    selected_color = color_map.get(color, F.RED)  # mặc định là đỏ nếu không tìm thấy màu
+
+    print(f"{selected_color}{logo}")
     print("├─── DOS TOOL")
     print("├─── AVAILABLE METHODS")
     print("├─── LAYER 7: HTTP | HTTP-PROXY | SLOWLORIS | SLOWLORIS-PROXY")
+    
     if os.name != "nt":
         print("├─── LAYER 4: SYN-FLOOD")
         print("├─── LAYER 2: ARP-SPOOF | DISCONNECT")
+    
     print("├───┐")
+    print(f"{F.YELLOW}Hãy chắc chắn rằng bạn hiểu những gì bạn đang làm!{F.RESET}")
