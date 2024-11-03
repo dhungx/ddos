@@ -12,12 +12,6 @@ RED_BOLD="\033[1;31m"
 GREEN_BOLD="\033[1;32m"
 RESET="\033[0m"
 
-# Kiểm tra quyền truy cập sudo
-if [[ $EUID -ne 0 ]]; then
-    echo -e "${RED_BOLD}Bạn cần quyền truy cập sudo để chạy script này.${RESET}"
-    exit 1
-fi
-
 # Thông báo hệ điều hành và chọn gói cài đặt
 echo -e "${GREEN_BOLD}Bạn đang sử dụng hệ điều hành nào?${RESET}"
 echo "1) Kali Linux/Ubuntu/Debian (apt)"
