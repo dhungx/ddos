@@ -12,6 +12,12 @@ RED_BOLD="\033[1;31m"
 GREEN_BOLD="\033[1;32m"
 RESET="\033[0m"
 
+# Kiểm tra quyền truy cập sudo
+if [[ $EUID -ne 0 ]]; then
+    echo -e "${RED_BOLD}Bạn cần quyền truy cập sudo để chạy script này.${RESET}"
+    exit 1
+fi
+
 # Thông báo hệ điều hành và chọn gói cài đặt
 echo -e "${GREEN_BOLD}Bạn đang sử dụng hệ điều hành nào?${RESET}"
 echo "1) Kali Linux/Ubuntu/Debian (apt)"
@@ -22,28 +28,48 @@ echo "5) macOS"
 echo "6) Windows"
 read -p "Lựa chọn của bạn (1/2/3/4/5/6): " os_choice
 
-# Hàm cập nhật và cài đặt các gói cần thiết cho các hệ điều hành khác nhau
+# Hàm kiểm tra cài đặt gói
+check_and_install() {
+    if ! command -v "$1" &>/dev/null; then
+        echo -e "${GREEN_BOLD}Đang cài đặt $1...${RESET}"
+        eval "$2"
+    else
+        echo -e "${GREEN_BOLD}$1 đã được cài đặt.${RESET}"
+    fi
+}
+
+# Cài đặt các gói cần thiết cho các hệ điều hành khác nhau
 install_packages() {
     case "$os_choice" in
         1)
             echo -e "${GREEN_BOLD}Đang cập nhật và cài đặt các gói cần thiết bằng apt...${RESET}"
             sudo apt update && sudo apt upgrade -y
-            sudo apt install -y python3 python3-pip nmap
+            check_and_install "python3" "sudo apt install -y python3"
+            check_and_install "python3-pip" "sudo apt install -y python3-pip"
+            check_and_install "nmap" "sudo apt install -y nmap"
+            check_and_install "iptables" "sudo apt install -y iptables"
             ;;
         2)
             echo -e "${GREEN_BOLD}Đang cập nhật và cài đặt các gói cần thiết bằng pacman...${RESET}"
             sudo pacman -Syu --noconfirm
-            sudo pacman -S --noconfirm python python-pip nmap
+            check_and_install "python" "sudo pacman -S --noconfirm python"
+            check_and_install "python-pip" "sudo pacman -S --noconfirm python-pip"
+            check_and_install "nmap" "sudo pacman -S --noconfirm nmap"
+            check_and_install "iptables" "sudo pacman -S --noconfirm iptables"
             ;;
         3)
             echo -e "${GREEN_BOLD}Đang cập nhật và cài đặt các gói cần thiết bằng apk...${RESET}"
             sudo apk update && sudo apk upgrade
-            sudo apk add python3 py3-pip nmap
+            check_and_install "python3" "sudo apk add python3"
+            check_and_install "py3-pip" "sudo apk add py3-pip"
+            check_and_install "nmap" "sudo apk add nmap"
+            check_and_install "iptables" "sudo apk add iptables"
             ;;
         4)
             echo -e "${GREEN_BOLD}Đang cập nhật và cài đặt các gói cần thiết bằng pkg...${RESET}"
             pkg update && pkg upgrade -y
-            pkg install -y python nmap
+            check_and_install "python" "pkg install -y python"
+            check_and_install "nmap" "pkg install -y nmap"
             ;;
         5)
             # Kiểm tra và cài đặt Homebrew cho macOS nếu chưa có
@@ -53,7 +79,8 @@ install_packages() {
             fi
             echo -e "${GREEN_BOLD}Đang cập nhật và cài đặt các gói cần thiết bằng Homebrew...${RESET}"
             brew update && brew upgrade
-            brew install python nmap
+            check_and_install "python" "brew install python"
+            check_and_install "nmap" "brew install nmap"
             ;;
         6)
             echo -e "${RED_BOLD}Hãy cài đặt thủ công Python, pip, và nmap cho Windows.${RESET}"
@@ -80,6 +107,13 @@ fi
 # Cài đặt các thư viện Python cần thiết
 echo -e "${GREEN_BOLD}Đang cài đặt các thư viện Python cần thiết...${RESET}"
 pip3 install requests colorama humanfriendly PySocks scapy get-mac --quiet
+
+# Cấu hình iptables
+echo -e "${GREEN_BOLD}Đang cấu hình iptables...${RESET}"
+# Chặn tất cả lưu lượng đầu vào trừ kết nối đã thiết lập
+sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+# Chặn tất cả lưu lượng đến
+sudo iptables -A INPUT -j DROP
 
 # Kiểm tra sự tồn tại của vbs.py và chạy nếu có
 if [[ -f "vbs.py" ]]; then
