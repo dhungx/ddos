@@ -3,56 +3,55 @@ import random
 from colorama import Fore as F, Style as S
 
 def show_logo() -> None:
-    """In logo ứng dụng với thông điệp cảnh báo với bố cục đẹp và màu sắc sinh động.
+    """Displays the application logo with a warning message in a visually appealing layout with colors."""
 
-    Trả về:
-        None
-    """
     logo = r"""
-        __   _____ ___  ___  ___ ___   ___ _____ _   _ ___ ___ ___  
-      \ \ / /_ _| _ )/ _ \/ __/ __| / __|_   _| | | |   \_ _/ _ \ 
-       \ V / | || _ \ (_) \__ \__ \ \__ \ | | | |_| | |) | | (_) |
-        \_/ |___|___/\___/|___/___/ |___/ |_|  \___/|___/___\___/ 
-                                                              
-    HÃY CẨN THẬN TRƯỚC KHI SỬ DỤNG VÌ VIỆC BẠN SẮP LÀM CÓ THỂ LÀ ĐIỀU PHẠM PHÁP
-    ĐỪNG TẤN CÔNG TRANG WEB CHÍNH PHỦ (NHÀ NƯỚC).
+         __   _____ ___  ___  ___ ___   ___ _____ _   _ ___ ___ ___  
+       \ \ / /_ _| _ )/ _ \/ __/ __| / __|_   _| | | |   \_ _/ _ \ 
+        \ V / | || _ \ (_) \__ \__ \ \__ \ | | | |_| | |) | | (_) |
+         \_/ |___|___/\___/|___/___/ |___/ |_|  \___/|___/___\___/ 
 
-    PHẢI ĐẲNG CẤP THÌ MỚI TỒN TẠI ĐƯỢC!
+     HÃY CẨN THẬN TRƯỚC KHI SỬ DỤNG VÌ VIỆC BẠN SẮP LÀM CÓ THỂ LÀ ĐIỀU PHẠM PHÁP
+     ĐỪNG TẤN CÔNG TRANG WEB CHÍNH PHỦ (NHÀ NƯỚC).
 
-                    AuThor: ViBoss Studio
-                    Github: https://github.com/dhungx/
+     PHẢI ĐẲNG CẤP THÌ MỚI TỒN TẠI ĐƯỢC!
+
+                     AUTHOR: VIBOSS STUDIO
+                     GITHUB: https://github.com/dhungx/
     """
 
-    # Định nghĩa danh sách màu
-    color_map = [
-        F.RED,
-        F.GREEN,
-        F.YELLOW,
-        F.BLUE,
-        F.MAGENTA,
-        F.CYAN,
-        F.WHITE,
-    ]
+    # Define a list of colors
+    color_map = [F.RED, F.GREEN, F.YELLOW, F.BLUE, F.MAGENTA, F.CYAN, F.WHITE]
 
-    # In logo với màu sắc ngẫu nhiên cho từng dòng
-    print(f"{F.MAGENTA}{'=' * 78}{F.RESET}")  # Đường ngang trên cùng
+    # Print the logo with random colors for each line
+    print(f"{F.MAGENTA}{'=' * 78}{F.RESET}")
     for line in logo.splitlines():
-        if line.strip():  # Kiểm tra nếu dòng không rỗng
+        if line.strip():
             selected_color = random.choice(color_map)
-            print(f"{selected_color}{line.center(78)}{F.RESET}")  # Căn giữa dòng
+            print(f"{selected_color}{line.center(78)}{F.RESET}")
 
-    # In các thông tin khác với bố cục đẹp hơn
-    print(f"{F.MAGENTA}{'=' * 78}{F.RESET}")  # Đường ngang dưới logo
-    print(f"{random.choice(color_map)}│{' ' * 26}DOS TOOL{' ' * 25}│{F.RESET}")
-    print(f"{random.choice(color_map)}│{' ' * 24}AVAILABLE METHODS{' ' * 23}│{F.RESET}")
-    print(f"{random.choice(color_map)}│{' ' * 28}LAYER 7: HTTP{' ' * 28}│{F.RESET}")
-    print(f"{random.choice(color_map)}│{' ' * 25}L7: HTTP-PROXY{' ' * 26}│{F.RESET}")
-    print(f"{random.choice(color_map)}│{' ' * 26}L7: LSLOWLORIS{' ' * 26}│{F.RESET}")
-    print(f"{random.choice(color_map)}│{' ' * 22}L7: SLOWLORIS-PROXY{' ' * 21}│{F.RESET}")
+    # Divider and title for the methods section
+    print(f"{F.MAGENTA}{'=' * 78}{F.RESET}")
+    print(f"{F.CYAN}{'─' * 78}{F.RESET}")
+    print(f"{F.YELLOW}{'AVAILABLE DOS METHODS'.center(78)}{F.RESET}")
+    print(f"{F.CYAN}{'─' * 78}{F.RESET}")
+
+    # Layer sections with improved color layout
+    print(f"{F.GREEN}{'LAYER 7:'.center(78)}{F.RESET}")
+    print(f"{F.CYAN} {'• HTTP'.center(76)}{F.RESET}")
+    print(f"{F.CYAN} {'• HTTP-PROXY'.center(76)}{F.RESET}")
+    print(f"{F.CYAN} {'• SLOWLORIS'.center(76)}{F.RESET}")
+    print(f"{F.CYAN} {'• SLOWLORIS-PROXY'.center(76)}{F.RESET}")
 
     if os.name != "nt":
-        print(f"{random.choice(color_map)}│{' ' * 25}LAYER 4: SYN-FLOOD{' ' * 23}│{F.RESET}")
-        print(f"{random.choice(color_map)}│{' ' * 24}LAYER 2: ARP-SPOOF{' ' * 23}│{F.RESET}")
-        print(f"{random.choice(color_map)}│{' ' * 26}L2: DISCONNECT{' ' * 27}│{F.RESET}")
+        print(f"{F.GREEN}{'LAYER 4:'.center(78)}{F.RESET}")
+        print(f"{F.CYAN} {'• SYN-FLOOD'.center(76)}{F.RESET}")
 
-    print(f"{F.MAGENTA}{'=' * 78}{F.RESET}")  
+        print(f"{F.GREEN}{'LAYER 2:'.center(78)}{F.RESET}")
+        print(f"{F.CYAN} {'• ARP-SPOOF'.center(76)}{F.RESET}")
+        print(f"{F.CYAN} {'• DISCONNECT'.center(76)}{F.RESET}")
+
+    # Final caution line
+    print(f"{F.MAGENTA}{'─' * 78}{F.RESET}")
+    print(f"{F.RED}{'HÃY CHẮC CHẮN RẰNG BẠN HIỂU NHỮNG GÌ BẠN ĐANG LÀM!'.center(78)}{F.RESET}")
+    print(f"{F.MAGENTA}{'=' * 78}{F.RESET}")
