@@ -46,13 +46,13 @@ def show_logo() -> None:
     print(f"{random.choice(color_map)}│{' ' * 26}DOS TOOL{' ' * 25}│{F.RESET}")
     print(f"{random.choice(color_map)}│{' ' * 24}AVAILABLE METHODS{' ' * 23}│{F.RESET}")
     print(f"{random.choice(color_map)}│{' ' * 28}LAYER 7: HTTP{' ' * 28}│{F.RESET}")
-    print(f"{random.choice(color_map)}│{' ' * 25}HTTP-PROXY{' ' * 26}│{F.RESET}")
-    print(f"{random.choice(color_map)}│{' ' * 26}SLOWLORIS{' ' * 26}│{F.RESET}")
-    print(f"{random.choice(color_map)}│{' ' * 22}SLOWLORIS-PROXY{' ' * 21}│{F.RESET}")
+    print(f"{random.choice(color_map)}│{' ' * 25}L7: HTTP-PROXY{' ' * 26}│{F.RESET}")
+    print(f"{random.choice(color_map)}│{' ' * 26}L7: LSLOWLORIS{' ' * 26}│{F.RESET}")
+    print(f"{random.choice(color_map)}│{' ' * 22}L7: SLOWLORIS-PROXY{' ' * 21}│{F.RESET}")
 
     if os.name != "nt":
         print(f"{random.choice(color_map)}│{' ' * 25}LAYER 4: SYN-FLOOD{' ' * 23}│{F.RESET}")
         print(f"{random.choice(color_map)}│{' ' * 24}LAYER 2: ARP-SPOOF{' ' * 23}│{F.RESET}")
-        print(f"{random.choice(color_map)}│{' ' * 26}DISCONNECT{' ' * 27}│{F.RESET}")
+        print(f"{random.choice(color_map)}│{' ' * 26}L2: DISCONNECT{' ' * 27}│{F.RESET}")
 
     print(f"{F.MAGENTA}{'=' * 78}{F.RESET}")  
