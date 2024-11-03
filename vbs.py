@@ -5,7 +5,17 @@ Main script to start GUI DoS attack application.
 
 import os
 import sys
-from colorama import Fore
+
+# Kiểm tra và cài đặt colorama nếu cần
+try:
+    from colorama import Fore, init
+except ImportError:
+    print("\ncolorama chưa được cài đặt. Đang cài đặt...")
+    os.system(f"{sys.executable} -m pip install colorama")
+    from colorama import Fore, init
+
+# Khởi tạo colorama (đặc biệt quan trọng trên Windows)
+init(autoreset=True)
 
 # Thay đổi thư mục làm việc đến vị trí của file script
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -17,13 +27,13 @@ try:
         check_http_target_input,
         check_local_target_input,
         check_method_input,
-        check_number_input
+        check_number_input,
     )
     from tools.addons.ip_tools import show_local_host_ips
     from tools.addons.logo import show_logo
     from tools.method import AttackMethod
 except ImportError as err:
-    print(f"\n{Fore.RED}Failed to import required modules: {err}{Fore.RESET}")
+    print(f"\n{Fore.RED}Không thể import các module yêu cầu: {err}{Fore.RESET}")
     sys.exit(1)
 
 
@@ -51,14 +61,18 @@ def configure_attack():
 
 def start_attack(method, target, threads, duration, sleep_time):
     """Khởi động cuộc tấn công với các tham số đã cấu hình."""
-    with AttackMethod(
-        duration=duration,
-        method_name=method,
-        threads=threads,
-        target=target,
-        sleep_time=sleep_time,
-    ) as attack:
-        attack.start()
+    try:
+        with AttackMethod(
+            duration=duration,
+            method_name=method,
+            threads=threads,
+            target=target,
+            sleep_time=sleep_time,
+        ) as attack:
+            attack.start()
+    except Exception as e:
+        print(f"{Fore.RED}Lỗi khi khởi động tấn công: {e}{Fore.RESET}")
+        sys.exit(1)
 
 
 def main():
@@ -69,11 +83,10 @@ def main():
         start_attack(method, target, threads, duration, sleep_time)
     except KeyboardInterrupt:
         print(
-            f"\n\n{Fore.RED}[!] {Fore.MAGENTA}Ctrl+C detected. Program closed.\n\n{Fore.RESET}"
+            f"\n\n{Fore.RED}[!] {Fore.MAGENTA}Phát hiện Ctrl+C. Đóng chương trình.\n\n{Fore.RESET}"
         )
-        sys.exit(1)
     except Exception as e:
-        print(f"{Fore.RED}Unexpected error: {e}{Fore.RESET}")
+        print(f"{Fore.RED}Lỗi không mong muốn: {e}{Fore.RESET}")
         sys.exit(1)
 
 
