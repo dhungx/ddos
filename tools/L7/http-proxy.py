@@ -27,7 +27,7 @@ def get_http_proxies() -> List[Dict[str, str]]:
     try:
         # Fetch proxy list from the updated ProxyScrape API
         with requests.get(
-            "https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=ipport&format=text",
+            "https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&protocol=http&proxy_format=ipport&format=text&timeout=20000",
             verify=False,
         ) as proxy_list:
             # Ensure each proxy has schema for both HTTP and HTTPS
