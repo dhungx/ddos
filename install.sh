@@ -36,7 +36,8 @@ if ! ping -c 1 8.8.8.8 &>/dev/null; then
 fi
 
 # === Kiểm tra dung lượng ổ đĩa (tối thiểu 50MB) ===
-FREE_SPACE=$(df / | tail -1 | awk '{print $4}')
+# Loại bỏ ký tự '%' nếu có trong kết quả
+FREE_SPACE=$(df / | tail -1 | awk '{print $4}' | tr -d '%')
 if [[ $FREE_SPACE -lt 50000 ]]; then
     echo -e "${RED_BOLD}❌ Dung lượng ổ đĩa quá thấp! Cần ít nhất 50MB trống.${RESET}"
     exit 1
