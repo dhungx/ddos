@@ -1,24 +1,47 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Main script to start GUI DoS attack application.
+Phiên bản cải tiến với cấu trúc module rõ ràng, logging và xử lý lỗi chuyên nghiệp.
 """
 
 import os
 import sys
+import logging
+import subprocess
+
+# Thiết lập logging với định dạng chuyên nghiệp
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt='%H:%M:%S'
+)
+
+def install_package(package_name):
+    """
+    Cài đặt package nếu chưa có.
+    """
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
+        logging.info(f"Đã cài đặt package: {package_name}")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Lỗi cài đặt {package_name}: {e}")
+        sys.exit(1)
 
 # Kiểm tra và cài đặt colorama nếu cần
 try:
-    from colorama import Fore, init
+    from colorama import Fore, init as colorama_init
 except ImportError:
-    print("\ncolorama chưa được cài đặt. Đang cài đặt...")
-    os.system(f"{sys.executable} -m pip install colorama")
-    from colorama import Fore, init
+    logging.info("colorama chưa được cài đặt. Đang cài đặt...")
+    install_package("colorama")
+    from colorama import Fore, init as colorama_init
 
 # Khởi tạo colorama (đặc biệt quan trọng trên Windows)
-init(autoreset=True)
+colorama_init(autoreset=True)
 
 # Thay đổi thư mục làm việc đến vị trí của file script
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
+script_dir = os.path.dirname(os.path.realpath(__file__))
+os.chdir(script_dir)
 os.system("cls" if os.name == "nt" else "clear")
 
 # Kiểm tra các thư viện cần thiết
@@ -33,34 +56,36 @@ try:
     from tools.addons.logo import show_logo
     from tools.method import AttackMethod
 except ImportError as err:
-    print(f"\n{Fore.RED}Không thể import các module yêu cầu: {err}{Fore.RESET}")
+    logging.error(f"Không thể import các module yêu cầu: {err}")
     sys.exit(1)
 
 
 def configure_attack():
-    """Cấu hình các thông số cho cuộc tấn công."""
+    """
+    Cấu hình các thông số cho cuộc tấn công.
+    """
     method = check_method_input()
     if method in ["arp-spoof", "disconnect"]:
         show_local_host_ips()
 
-    target = (
-        check_http_target_input()
-        if method not in ["arp-spoof", "disconnect"]
-        else check_local_target_input()
-    )
-    threads = (
-        check_number_input("threads")
-        if method not in ["arp-spoof", "disconnect"]
-        else 1
-    )
+    if method not in ["arp-spoof", "disconnect"]:
+        target = check_http_target_input()
+        threads = check_number_input("threads")
+    else:
+        target = check_local_target_input()
+        threads = 1
+
     duration = check_number_input("time")
     sleep_time = check_number_input("sleep time") if "slowloris" in method else 0
 
+    logging.info("Cấu hình tấn công hoàn tất.")
     return method, target, threads, duration, sleep_time
 
 
 def start_attack(method, target, threads, duration, sleep_time):
-    """Khởi động cuộc tấn công với các tham số đã cấu hình."""
+    """
+    Khởi động cuộc tấn công với các tham số đã cấu hình.
+    """
     try:
         with AttackMethod(
             duration=duration,
@@ -71,22 +96,22 @@ def start_attack(method, target, threads, duration, sleep_time):
         ) as attack:
             attack.start()
     except Exception as e:
-        print(f"{Fore.RED}Lỗi khi khởi động tấn công: {e}{Fore.RESET}")
+        logging.error(f"Lỗi khi khởi động tấn công: {e}")
         sys.exit(1)
 
 
 def main():
-    """Run main application."""
+    """
+    Main function chạy ứng dụng.
+    """
     show_logo()
     try:
         method, target, threads, duration, sleep_time = configure_attack()
         start_attack(method, target, threads, duration, sleep_time)
     except KeyboardInterrupt:
-        print(
-            f"\n\n{Fore.RED}[!] {Fore.MAGENTA}Phát hiện Ctrl+C. Đóng chương trình.\n\n{Fore.RESET}"
-        )
+        logging.warning("Phát hiện Ctrl+C. Đóng chương trình.")
     except Exception as e:
-        print(f"{Fore.RED}Lỗi không mong muốn: {e}{Fore.RESET}")
+        logging.error(f"Lỗi không mong muốn: {e}")
         sys.exit(1)
 
 
