@@ -35,14 +35,6 @@ if ! ping -c 1 8.8.8.8 &>/dev/null; then
     exit 1
 fi
 
-# === Kiểm tra dung lượng ổ đĩa (tối thiểu 50MB) ===
-# Sử dụng df với option -k để lấy dung lượng trống theo KB và loại bỏ khoảng trắng
-FREE_SPACE=$(df -k --output=avail / | tail -1 | tr -d ' ')
-if [[ $FREE_SPACE -lt 50000 ]]; then
-    echo -e "${RED_BOLD}❌ Dung lượng ổ đĩa quá thấp! Cần ít nhất 50MB trống.${RESET}"
-    exit 1
-fi
-
 # === Chọn hệ điều hành ===
 echo -e "${GREEN_BOLD}🖥️ Chọn hệ điều hành của bạn:${RESET}"
 echo "1) Kali Linux/Ubuntu/Debian (apt)"
